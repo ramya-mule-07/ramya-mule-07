@@ -1,0 +1,295 @@
+# Step 1: Install LangChain
+!pip install langchain --quiet
+# Step 2: Import LangChain Tool
+from langchain.tools import Tool
+# Step 3: Your Custom Calculator Function
+def my_calculator(query: str) -> str:
+    try:
+        result = eval(query)
+        return f"The result is {result}"
+    except:
+        return "Sorry, I couldn't calculate that."
+# Step 4: Wrap in LangChain Tool
+calculator_tool = Tool(
+    name="Simple Calculator",
+    func=my_calculator,
+    description="Use this to calculate math expressions like '10 + 20 * 3'"
+)
+# Step 5: Our "Mini Agent" Logic (Very Basic)
+def simple_agent(user_input):
+    # If the input looks like a math question, use the calculator
+    if any(op in user_input for op in ['+', '-', '*', '/', '(', ')']):
+        print("Agent: I think I should use the calculator tool for this.")
+        return calculator_tool.run(user_input)
+    else:
+        return "Sorry, I don't know how to answer that yet."
+# Step 6: Ask the agent a question
+question = "(15 + 5) * 2"
+response = simple_agent(question)
+print("Agent Response:", response)
+-----------------------------------------------------------------------------------------------------
+
+# ✅ Step 1: Create a Graph using a Dictionary (Adjacency List)
+graph = {
+    "A": ["B", "C"],
+    "B": ["A", "D"],
+    "C": ["A", "D"],
+    "D": ["B", "C"]
+}
+
+# ✅ Step 2: Print the Graph
+print("Graph (Adjacency List):")
+for node in graph:
+    print(f"{node} is connected to {graph[node]}")
+
+# ✅ Step 3: Visit All Nodes (Simple Traversal using BFS)
+def bfs(start_node):
+    visited = []
+    queue = [start_node]
+
+    print("\nBFS Traversal:")
+    while queue:
+        current = queue.pop(0)
+        if current not in visited:
+            print(f"Visited: {current}")
+            visited.append(current)
+            queue.extend(graph[current])
+
+# ✅ Step 4: Run the Traversal
+bfs("A")
+----------------------------------------------------------------------------------------------------------------
+
+
+You are a helpful customer service AI agent. Your goal is to assist customers quickly and politely. Follow these steps:
+
+1. Greet the user warmly using their name if available.
+2. Ask what type of support they need:
+
+   * 📦 Order tracking
+   * 🔄 Return/refund
+   * 🛒 Product inquiry
+   * 💬 General question
+3. Based on the choice, provide a helpful answer or guide them to the next step.
+4. If they ask for tracking, ask for their order ID and show a mock status.
+5. If they want a refund, confirm the order ID and explain the process.
+6. If the question is unknown or outside scope, politely say:
+   *“Let me connect you with a human agent to assist further.”*
+7. Always end with: *“Is there anything else I can help you with?”*
+
+Use `@name`, `@order_id`, or other dynamic fields as needed.
+
+----------------------------------------------------------------------------------------------------------------
+
+You are a career assistant AI.
+
+Your job is to:
+1. Accept resume text input from the user.
+2. Extract any known skills from the resume. Focus on skills like Python, Java, SQL, Excel, Power BI, and Communication.
+3. Based on the skills, suggest a suitable job role:
+   - If the resume includes Python and SQL, suggest "Data Analyst".
+   - If it includes Java, suggest "Backend Developer".
+   - Else suggest "IT Support".
+
+Important: Always ask for human approval before finalizing the suggestion.**
+Say: "Do you approve this suggested role? (Yes or No)"
+
+If the user says:
+- "Yes": say "Great! Finalizing the job role as: <role>"
+- "No": ask "Would you like me to suggest another role or do you want to provide feedback?"
+
+You must stop and wait for the human reply before proceeding.
+
+----------------------------------------------------------------------------------------------------------------
+
+# Agent 1: Resume Screener - Extract skills
+def extract_skills(resume_text):
+    known_skills = ["python", "java", "sql", "excel", "power bi", "communication", "machine learning"]
+    extracted = [skill for skill in known_skills if skill in resume_text.lower()]
+    return extracted
+
+# Agent 2: Skill Matcher - Match to job description
+def match_skills(candidate_skills, job_required_skills):
+    match = [skill for skill in candidate_skills if skill in job_required_skills]
+    missing = [skill for skill in job_required_skills if skill not in candidate_skills]
+    return match, missing
+
+# Agent 3: Feedback Generator
+def generate_feedback(match, missing):
+    feedback = f"You matched {len(match)} out of {len(match)+len(missing)} skills.\n"
+    feedback += f"Matched Skills: {match}\n"
+    if missing:
+        feedback += f"Missing Skills: {missing}\n"
+        feedback += "Consider learning these skills to increase your chances."
+    else:
+        feedback += "Great! You are a perfect match for this job."
+    return feedback
+
+# Sample resume (as plain text input)
+resume = """
+Experienced software engineer with expertise in Python, SQL, and Excel.
+Worked on several data-driven projects with strong team collaboration.
+"""
+
+# Job description requirements
+job_skills = ["python", "sql", "excel", "power bi", "communication"]
+
+# Step 1: Extract skills
+candidate_skills = extract_skills(resume)
+
+# Step 2: Match skills
+matched, missing = match_skills(candidate_skills, job_skills)
+
+# Step 3: Generate feedback
+feedback = generate_feedback(matched, missing)
+
+print("Candidate Skills:", candidate_skills)
+print("\n--- Feedback ---")
+print(feedback)
+---------------------------------------------------------------------------------------------------------------
+
+You are a career assistant AI.
+
+Your job is to:
+1. Accept resume text input from the user.
+2. Extract any known skills from the resume. Focus on skills like Python, Java, SQL, Excel, Power BI, and Communication.
+3. Based on the skills, suggest a suitable job role:
+   - If the resume includes Python and SQL, suggest "Data Analyst".
+   - If it includes Java, suggest "Backend Developer".
+   - Else suggest "IT Support".
+
+Important: Always ask for human approval before finalizing the suggestion.
+Say: "Do you approve this suggested role? (Yes or No)"
+
+If the user says:
+- "Yes": say "Great! Finalizing the job role as: <role>"
+- "No": ask "Would you like me to suggest another role or do you want to provide feedback?"
+
+You must stop and wait for the human reply before proceeding.
+-------------------------------------------------------------------------------------------------------------------
+
+# Agent 1: Extract skills from resume
+def extract_skills(text):
+    skills = ["python", "java", "sql", "excel", "communication", "power bi"]
+    return [skill for skill in skills if skill in text.lower()]
+
+# Agent 2: Suggest job role
+def suggest_role(skills):
+    if "python" in skills and "sql" in skills:
+        return "Data Analyst"
+    elif "java" in skills:
+        return "Backend Developer"
+    else:
+        return "General IT Support"
+
+# Human-in-the-Loop approval
+def human_approval_flow(resume):
+    print("📄 Extracting skills...")
+    extracted = extract_skills(resume)
+    print("Skills Found:", extracted)
+
+    role = suggest_role(extracted)
+    print(f"\n AI Suggests: Based on your skills, the suitable job is: **{role}**")
+
+    # HITL Step
+    decision = input("\n Do you approve this suggestion? (yes/no): ").lower()
+
+    if decision == "yes":
+        print(f"\n Final Decision: Proceeding with role: {role}")
+    else:
+        print("\n Let's review manually or suggest another job with human help.")
+
+# Simulate resume input
+resume_text = """
+I have experience in Python and SQL. I worked on data projects and dashboards using Excel.
+"""
+
+# Run the system
+human_approval_flow(resume_text)
+--------------------------------------------------------------------------------------------------------------------------------------------------
+!pip install llama-index openai PyMuPDF
+
+import os
+os.environ["OPENAI_API_KEY"] = ""
+from google.colab import files
+uploaded = files.upload()  # Upload a PDF file here
+from llama_index.core import VectorStoreIndex
+from llama_index.readers.file import PDFReader
+
+# Load PDF (auto-picks the uploaded file)
+file_name = next(iter(uploaded))
+reader = PDFReader()
+documents = reader.load_data(file=file_name)
+
+# Create index and query engine
+index = VectorStoreIndex.from_documents(documents)
+query_engine = index.as_query_engine()
+
+# Ask a question
+response = query_engine.query("What is this document about?")
+print("AI Answer:", response)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+!pip install llama-index openai
+
+import os
+os.environ["OPENAI_API_KEY"] = ""
+
+# Create a sample handbook.txt file
+with open("handbook.txt", "w") as f:
+    f.write("""
+    Welcome to the company! Employees are entitled to 12 paid leaves per year.
+    Unused leaves can be carried forward to the next year.
+    The official working hours are from 9:00 AM to 5:00 PM, Monday to Friday.
+    Please refer to your manager for special leave requests.
+    """)
+
+print("Company handbook created.")
+
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
+
+# Load the document using LlamaIndex
+documents = SimpleDirectoryReader(input_dir=".").load_data()
+
+# Create an index from the document
+index = VectorStoreIndex.from_documents(documents)
+print("Document indexed.")
+# Create a query engine
+query_engine = index.as_query_engine()
+
+# Ask a question from the handbook
+question = "How many paid leaves do employees get?"
+response = query_engine.query(question)
+
+# Show the result
+print(f"Question: {question}")
+print(f" Answer: {response}")
+
+--------------------------------------------------------------------------------------------------------------------
+
+!pip install langchain-openai --quiet
+import os
+os.environ["OPENAI_API_KEY"] = ""
+
+from crewai import Agent, Task, Crew
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+
+agent = Agent(
+    role="AI Researcher",
+    goal="Track and summarize the latest in Artificial Intelligence.",
+    backstory="You're an expert who stays updated on all major AI innovations.",
+    llm=llm,
+    verbose=True
+)
+
+task = Task(
+    description="Find and summarize the top 3 AI news updates from this week.",
+    expected_output="Three concise bullet points summarizing major news.",
+    agent=agent
+)
+
+crew = Crew(agents=[agent], tasks=[task])
+result = crew.kickoff()
+print(result)
