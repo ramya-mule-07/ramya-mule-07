@@ -8,7 +8,7 @@ Transforming Raw Data into Scalable, Business-Ready Solutions |
 
 ## Executive Profile
 
-Results-driven Data Engineer with + years of experience designing and implementing scalable data pipelines, optimizing database performance, and enabling advanced analytics. Strong foundation in data architecture, ETL development, and cloud-based data solutions.
+Results-driven Data Engineer with 1 years of experience designing and implementing scalable data pipelines, optimizing database performance, and enabling advanced analytics. Strong foundation in data architecture, ETL development, and cloud-based data solutions.
 
 Currently advancing expertise in Microsoft Azure to architect modern, distributed, and enterprise-grade data platforms aligned with product-based and MNC standards.
 
